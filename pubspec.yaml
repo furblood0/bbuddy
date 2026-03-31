@@ -1,0 +1,42 @@
+name: bbuddy
+description: "Üniversite öğrencileri için gizlilik odaklı bütçe takip uygulaması."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.7
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # Durum Yönetimi (State Management)
+  provider: ^6.1.1
+
+  # Yerel Veri Tabanı (NoSQL Hive)
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Grafik ve Analiz
+  fl_chart: ^0.66.0
+
+  # Yardımcı Araçlar
+  uuid: ^4.2.2 # Benzersiz ID oluşturmak için
+  intl: ^0.19.0 # Tarih ve para birimi formatlama için (Önerilen)
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+  # Hive Kod Oluşturucuları (Model adaptörleri için gerekli)
+  build_runner: ^2.4.8
+  hive_generator: ^2.0.1
+
+flutter:
+  uses-material-design: true
+
+  # İleride ekleyeceğin varlıklar (ikonlar, logolar) için:
+  # assets:
+  #   - assets/images/
