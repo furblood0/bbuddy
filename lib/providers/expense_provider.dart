@@ -49,6 +49,12 @@ class ExpenseProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> clearAllExpenses() async {
+    await _dbService.clearAllExpenses();
+    _expenses.clear();
+    notifyListeners();
+  }
+
   Future<void> updateLimit(double newLimit) async {
     _budgetLimit = newLimit;
     await _dbService.saveBudgetLimit(newLimit);

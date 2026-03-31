@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/amount_formatter.dart';
 import '../../core/category_helper.dart';
 import '../../models/expense.dart';
 import '../../providers/expense_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../settings/settings_screen.dart';
 import 'widgets/add_expense_sheet.dart';
 import 'widgets/edit_expense_sheet.dart';
@@ -19,23 +21,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => context.read<ExpenseProvider>().loadExpenses());
-  }
-
-  String _formatAmount(double amount) {
-    final str = amount.toStringAsFixed(2);
-    final parts = str.split('.');
-    String intPart = parts[0];
-    final decPart = parts[1];
-    final isNegative = intPart.startsWith('-');
-    if (isNegative) intPart = intPart.substring(1);
-
-    final buffer = StringBuffer();
-    for (int i = 0; i < intPart.length; i++) {
-      if (i > 0 && (intPart.length - i) % 3 == 0) buffer.write('.');
-      buffer.write(intPart[i]);
-    }
-    return '${isNegative ? '-' : ''}${buffer.toString()},$decPart ₺';
+    Future.microtask(() {
+      if (!mounted) return;
+      context.read<ExpenseProvider>().loadExpenses();
+    });
   }
 
   String _formatDate(DateTime date) {
@@ -49,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ExpenseProvider>();
+    final currency = context.watch<SettingsProvider>().currencySymbol;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -88,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildBudgetCard(provider, colorScheme),
+          _buildBudgetCard(provider, colorScheme, currency),
           const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -115,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: provider.expenses.isEmpty
                 ? _buildEmptyState(colorScheme)
-                : _buildExpenseList(provider, colorScheme),
+                : _buildExpenseList(provider, colorScheme, currency),
           ),
         ],
       ),
@@ -135,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBudgetCard(ExpenseProvider provider, ColorScheme colorScheme) {
+  Widget _buildBudgetCard(ExpenseProvider provider, ColorScheme colorScheme, String currency) {
     final progress =
         (provider.totalExpenses / provider.budgetLimit).clamp(0.0, 1.0);
     final isOverBudget = provider.remainingBudget < 0;
@@ -155,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
         boxShadow: [
           BoxShadow(
             color: (isOverBudget ? Colors.red : colorScheme.primary)
-                .withOpacity(0.35),
+                .withValues(alpha: 0.35),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -170,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 'Kalan Bütçe',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.85),
+                  color: Colors.white.withValues(alpha: 0.85),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -179,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -194,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            _formatAmount(provider.remainingBudget),
+            formatAmount(provider.remainingBudget, currency),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 34,
@@ -207,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(6),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: Colors.white.withOpacity(0.25),
+              backgroundColor: Colors.white.withValues(alpha: 0.25),
               valueColor: AlwaysStoppedAnimation<Color>(
                 isOverBudget ? Colors.red.shade200 : Colors.white,
               ),
@@ -221,12 +211,12 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 '%${(progress * 100).toStringAsFixed(0)} kullanıldı',
                 style: TextStyle(
-                    color: Colors.white.withOpacity(0.7), fontSize: 12),
+                    color: Colors.white.withValues(alpha: 0.7), fontSize: 12),
               ),
               Text(
-                '${_formatAmount(provider.totalExpenses)} / ${_formatAmount(provider.budgetLimit)}',
+                '${formatAmount(provider.totalExpenses, currency)} / ${formatAmount(provider.budgetLimit, currency)}',
                 style: TextStyle(
-                    color: Colors.white.withOpacity(0.7), fontSize: 12),
+                    color: Colors.white.withValues(alpha: 0.7), fontSize: 12),
               ),
             ],
           ),
@@ -268,18 +258,18 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildExpenseList(ExpenseProvider provider, ColorScheme colorScheme) {
+  Widget _buildExpenseList(ExpenseProvider provider, ColorScheme colorScheme, String currency) {
     final expenses = provider.expenses.reversed.toList();
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
       itemCount: expenses.length,
       itemBuilder: (context, index) =>
-          _buildExpenseItem(expenses[index], provider, colorScheme),
+          _buildExpenseItem(expenses[index], provider, colorScheme, currency),
     );
   }
 
   Widget _buildExpenseItem(
-      Expense expense, ExpenseProvider provider, ColorScheme colorScheme) {
+      Expense expense, ExpenseProvider provider, ColorScheme colorScheme, String currency) {
     final categoryColor = CategoryHelper.getColor(expense.category);
 
     return Dismissible(
@@ -311,7 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -333,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: categoryColor.withOpacity(0.12),
+              color: categoryColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
@@ -354,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           trailing: Text(
-            '-${_formatAmount(expense.amount)}',
+            '-${formatAmount(expense.amount, currency)}',
             style: TextStyle(
               color: Colors.red.shade500,
               fontWeight: FontWeight.bold,

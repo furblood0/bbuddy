@@ -216,7 +216,7 @@ class _EditExpenseSheetState extends State<EditExpenseSheet> {
                             horizontal: 14, vertical: 8),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? color.withOpacity(0.15)
+                              ? color.withValues(alpha: 0.15)
                               : colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(

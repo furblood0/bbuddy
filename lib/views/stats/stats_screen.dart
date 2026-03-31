@@ -2,8 +2,10 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/amount_formatter.dart';
 import '../../core/category_helper.dart';
 import '../../providers/expense_provider.dart';
+import '../../providers/settings_provider.dart';
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
@@ -15,22 +17,10 @@ class StatsScreen extends StatefulWidget {
 class _StatsScreenState extends State<StatsScreen> {
   int _touchedIndex = -1;
 
-  String _formatAmount(double amount) {
-    final str = amount.toStringAsFixed(2);
-    final parts = str.split('.');
-    String intPart = parts[0];
-    final decPart = parts[1];
-    final buffer = StringBuffer();
-    for (int i = 0; i < intPart.length; i++) {
-      if (i > 0 && (intPart.length - i) % 3 == 0) buffer.write('.');
-      buffer.write(intPart[i]);
-    }
-    return '${buffer.toString()},$decPart ₺';
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ExpenseProvider>();
+    final currency = context.watch<SettingsProvider>().currencySymbol;
     final colorScheme = Theme.of(context).colorScheme;
     final categoryTotals = provider.categoryTotals;
     final total = provider.totalExpenses;
@@ -64,7 +54,7 @@ class _StatsScreenState extends State<StatsScreen> {
       body: provider.expenses.isEmpty
           ? _buildEmptyState(colorScheme)
           : _buildContent(
-              context, provider, categoryTotals, total, colorScheme),
+              context, provider, categoryTotals, total, colorScheme, currency),
     );
   }
 
@@ -107,6 +97,7 @@ class _StatsScreenState extends State<StatsScreen> {
     Map<String, double> categoryTotals,
     double total,
     ColorScheme colorScheme,
+    String currency,
   ) {
     final sortedEntries = categoryTotals.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -116,21 +107,21 @@ class _StatsScreenState extends State<StatsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSummaryRow(provider, total, colorScheme),
+          _buildSummaryRow(provider, total, colorScheme, currency),
           const SizedBox(height: 20),
           _buildSectionHeader(context, 'Kategori Dağılımı'),
           const SizedBox(height: 12),
-          _buildPieChartCard(sortedEntries, total, colorScheme),
+          _buildPieChartCard(sortedEntries, total, colorScheme, currency),
           const SizedBox(height: 20),
           _buildSectionHeader(context, 'Kategori Detayı'),
           const SizedBox(height: 12),
-          _buildCategoryList(sortedEntries, total, colorScheme),
+          _buildCategoryList(sortedEntries, total, colorScheme, currency),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryRow(dynamic provider, double total, ColorScheme colorScheme) {
+  Widget _buildSummaryRow(dynamic provider, double total, ColorScheme colorScheme, String currency) {
     final budgetUsedPercent =
         (total / provider.budgetLimit * 100).clamp(0.0, 999.0);
 
@@ -141,7 +132,7 @@ class _StatsScreenState extends State<StatsScreen> {
             colorScheme,
             icon: Icons.payments_outlined,
             label: 'Toplam Harcama',
-            value: _formatAmount(total),
+            value: formatAmount(total, currency),
             color: colorScheme.primary,
           ),
         ),
@@ -183,7 +174,7 @@ class _StatsScreenState extends State<StatsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -219,6 +210,7 @@ class _StatsScreenState extends State<StatsScreen> {
     List<MapEntry<String, double>> sortedEntries,
     double total,
     ColorScheme colorScheme,
+    String currency,
   ) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -227,7 +219,7 @@ class _StatsScreenState extends State<StatsScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -274,11 +266,11 @@ class _StatsScreenState extends State<StatsScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      _touchedIndex >= 0 &&
+                          _touchedIndex >= 0 &&
                               _touchedIndex < sortedEntries.length
-                          ? _formatAmount(
-                              sortedEntries[_touchedIndex].value)
-                          : _formatAmount(total),
+                          ? formatAmount(
+                              sortedEntries[_touchedIndex].value, currency)
+                          : formatAmount(total, currency),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -351,6 +343,7 @@ class _StatsScreenState extends State<StatsScreen> {
     List<MapEntry<String, double>> sortedEntries,
     double total,
     ColorScheme colorScheme,
+    String currency,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -358,7 +351,7 @@ class _StatsScreenState extends State<StatsScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -385,7 +378,7 @@ class _StatsScreenState extends State<StatsScreen> {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: color.withOpacity(0.12),
+                            color: color.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
@@ -411,7 +404,7 @@ class _StatsScreenState extends State<StatsScreen> {
                                     ),
                                   ),
                                   Text(
-                                    _formatAmount(entry.value),
+                                    formatAmount(entry.value, currency),
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
@@ -430,7 +423,7 @@ class _StatsScreenState extends State<StatsScreen> {
                                       child: LinearProgressIndicator(
                                         value: entry.value / total,
                                         backgroundColor: color
-                                            .withOpacity(0.12),
+                                            .withValues(alpha: 0.12),
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
                                                 color),
@@ -463,7 +456,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   indent: 74,
                   endIndent: 20,
                   color:
-                      colorScheme.outlineVariant.withOpacity(0.4),
+                      colorScheme.outlineVariant.withValues(alpha: 0.4),
                 ),
             ],
           );

@@ -6,6 +6,8 @@ class DatabaseService {
   static const String _settingsBoxName = 'settings_box';
   static const String _budgetLimitKey = 'budget_limit';
   static const String _onboardingKey = 'onboarding_seen';
+  static const String _currencyKey = 'currency_symbol';
+  static const String _themeModeKey = 'theme_mode';
   static const double _defaultBudgetLimit = 5000.0;
 
   Future<Box<Expense>> get _expensesBox async =>
@@ -52,5 +54,30 @@ class DatabaseService {
   Future<void> setOnboardingSeen() async {
     final box = await _settingsBox;
     await box.put(_onboardingKey, true);
+  }
+
+  Future<String> getCurrencySymbol() async {
+    final box = await _settingsBox;
+    return box.get(_currencyKey, defaultValue: '₺') as String;
+  }
+
+  Future<void> saveCurrencySymbol(String symbol) async {
+    final box = await _settingsBox;
+    await box.put(_currencyKey, symbol);
+  }
+
+  Future<int> getThemeModeIndex() async {
+    final box = await _settingsBox;
+    return box.get(_themeModeKey, defaultValue: 0) as int;
+  }
+
+  Future<void> saveThemeModeIndex(int index) async {
+    final box = await _settingsBox;
+    await box.put(_themeModeKey, index);
+  }
+
+  Future<void> clearAllExpenses() async {
+    final box = await _expensesBox;
+    await box.clear();
   }
 }

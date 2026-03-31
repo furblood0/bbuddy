@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'models/expense.dart';
 import 'providers/expense_provider.dart';
+import 'providers/settings_provider.dart';
 import 'services/database_service.dart';
 import 'views/main_screen.dart';
 import 'views/onboarding/onboarding_screen.dart';
@@ -15,10 +16,14 @@ void main() async {
 
   final hasSeenOnboarding = await DatabaseService().hasSeenOnboarding();
 
+  final settingsProvider = SettingsProvider();
+  await settingsProvider.loadSettings();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ExpenseProvider()),
+        ChangeNotifierProvider.value(value: settingsProvider),
       ],
       child: BBuddyApp(showOnboarding: !hasSeenOnboarding),
     ),
@@ -31,10 +36,12 @@ class BBuddyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = context.watch<SettingsProvider>().themeMode;
+
     return MaterialApp(
       title: 'BBuddy',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.deepPurple,
