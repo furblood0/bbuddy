@@ -20,6 +20,8 @@
   "homeNoExpensesTitle": "No expenses yet",
   "homeNoExpensesSubtitle": "Tap the button below to add your first expense",
   "homeSwipeToDelete": "Delete",
+  "homeExpenseDeleted": "Expense deleted",
+  "homeUndo": "Undo",
 
   "statsTitle": "Statistics",
   "statsNoDataTitle": "No data to show yet",

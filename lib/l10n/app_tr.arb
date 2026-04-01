@@ -30,6 +30,8 @@
   "homeNoExpensesTitle": "Henüz harcama eklenmedi",
   "homeNoExpensesSubtitle": "Aşağıdaki butona basarak ilk harcamanı ekle",
   "homeSwipeToDelete": "Sil",
+  "homeExpenseDeleted": "Harcama silindi",
+  "homeUndo": "Geri Al",
 
   "statsTitle": "İstatistikler",
   "statsNoDataTitle": "Henüz gösterilecek veri yok",

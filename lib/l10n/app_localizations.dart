@@ -200,6 +200,18 @@ abstract class AppLocalizations {
   /// **'Sil'**
   String get homeSwipeToDelete;
 
+  /// No description provided for @homeExpenseDeleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Harcama silindi'**
+  String get homeExpenseDeleted;
+
+  /// No description provided for @homeUndo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geri Al'**
+  String get homeUndo;
+
   /// No description provided for @statsTitle.
   ///
   /// In tr, this message translates to:

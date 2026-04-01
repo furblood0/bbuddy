@@ -306,7 +306,23 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      onDismissed: (_) => provider.deleteExpense(expense.id),
+      onDismissed: (_) {
+        provider.deleteExpense(expense.id);
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l.homeExpenseDeleted),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+            action: SnackBarAction(
+              label: l.homeUndo,
+              onPressed: () => provider.addExpense(expense),
+            ),
+          ),
+        );
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(

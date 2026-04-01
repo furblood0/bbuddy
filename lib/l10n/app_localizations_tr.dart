@@ -65,6 +65,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get homeSwipeToDelete => 'Sil';
 
   @override
+  String get homeExpenseDeleted => 'Harcama silindi';
+
+  @override
+  String get homeUndo => 'Geri Al';
+
+  @override
   String get statsTitle => 'İstatistikler';
 
   @override

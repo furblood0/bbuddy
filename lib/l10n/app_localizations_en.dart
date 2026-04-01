@@ -65,6 +65,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeSwipeToDelete => 'Delete';
 
   @override
+  String get homeExpenseDeleted => 'Expense deleted';
+
+  @override
+  String get homeUndo => 'Undo';
+
+  @override
   String get statsTitle => 'Statistics';
 
   @override
