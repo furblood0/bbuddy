@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+
 class CategoryHelper {
   static const List<String> categories = [
     'Yemek',
@@ -9,6 +11,23 @@ class CategoryHelper {
     'Fatura',
     'Diğer',
   ];
+
+  static String displayName(String key, AppLocalizations l) {
+    switch (key) {
+      case 'Yemek':
+        return l.categoryFood;
+      case 'Ulaşım':
+        return l.categoryTransport;
+      case 'Eğlence':
+        return l.categoryEntertainment;
+      case 'Market':
+        return l.categoryGrocery;
+      case 'Fatura':
+        return l.categoryBills;
+      default:
+        return l.categoryOther;
+    }
+  }
 
   static IconData getIcon(String category) {
     switch (category) {

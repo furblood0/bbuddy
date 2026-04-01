@@ -1,0 +1,118 @@
+{
+  "@@locale": "tr",
+
+  "appTitle": "BBuddy",
+
+  "cancel": "İptal",
+  "save": "Kaydet",
+  "delete": "Sil",
+  "update": "Güncelle",
+  "skip": "Atla",
+
+  "homeSettings": "Ayarlar",
+  "homeExpenses": "Harcamalar",
+  "homeExpenseCount": "{count} kayıt",
+  "@homeExpenseCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "homeAddExpense": "Harcama Ekle",
+  "homeRemainingBudget": "Kalan Bütçe",
+  "homeBudgetExceeded": "⚠ Bütçe Aşıldı",
+  "homeThisMonth": "Bu Ay",
+  "homeBudgetUsedPercent": "%{percent} kullanıldı",
+  "@homeBudgetUsedPercent": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "homeNoExpensesTitle": "Henüz harcama eklenmedi",
+  "homeNoExpensesSubtitle": "Aşağıdaki butona basarak ilk harcamanı ekle",
+  "homeSwipeToDelete": "Sil",
+
+  "statsTitle": "İstatistikler",
+  "statsNoDataTitle": "Henüz gösterilecek veri yok",
+  "statsNoDataSubtitle": "Harcama ekledikçe grafikler burada görünür",
+  "statsTotalExpenses": "Toplam Harcama",
+  "statsCategoryCount": "Kategori Sayısı",
+  "statsBudgetUsage": "Bütçe Kullanımı",
+  "statsCategoryDistribution": "Kategori Dağılımı",
+  "statsCategoryDetail": "Kategori Detayı",
+  "statsTotal": "Toplam",
+
+  "settingsTitle": "Ayarlar",
+  "settingsBudget": "Bütçe",
+  "settingsMonthlyBudgetLimit": "Aylık Bütçe Limiti",
+  "settingsMonthlyBudgetDesc": "Bu ay için maksimum harcama tutarı",
+  "settingsLimitLabel": "Limit",
+  "settingsLimitHint": "ör. 5000",
+  "settingsBudgetSaved": "Bütçe limiti kaydedildi",
+  "settingsEnterLimit": "Lütfen bir limit girin",
+  "settingsEnterValidAmount": "Geçerli bir tutar girin",
+  "settingsAppearance": "Görünüm",
+  "settingsCurrency": "Para Birimi",
+  "settingsSelectCurrency": "Para Birimi Seç",
+  "settingsCurrencyUpdated": "Para birimi güncellendi",
+  "settingsTheme": "Tema",
+  "settingsSelectTheme": "Tema Seç",
+  "settingsThemeUpdated": "Tema güncellendi",
+  "settingsThemeSystem": "Sistem",
+  "settingsThemeSystemDesc": "Cihaz temasını kullan",
+  "settingsThemeLight": "Açık",
+  "settingsThemeLightDesc": "Her zaman açık tema",
+  "settingsThemeDark": "Koyu",
+  "settingsThemeDarkDesc": "Her zaman koyu tema",
+  "settingsLanguage": "Dil",
+  "settingsSelectLanguage": "Dil Seç",
+  "settingsLanguageUpdated": "Dil güncellendi",
+  "settingsAbout": "Hakkında",
+  "settingsVersion": "Versiyon",
+  "settingsPrivacy": "Gizlilik",
+  "settingsPrivacyValue": "Tüm veriler cihazında",
+  "settingsInternet": "İnternet",
+  "settingsInternetValue": "Kullanılmıyor",
+  "settingsClearAllData": "Tüm Verileri Sil",
+  "settingsClearAllDataTitle": "Tüm Verileri Sil",
+  "settingsClearAllDataDesc": "Tüm harcama kayıtların kalıcı olarak silinecek. Bu işlem geri alınamaz.",
+  "settingsAllDataDeleted": "Tüm veriler silindi",
+
+  "addExpenseTitle": "Harcama Ekle",
+  "addExpenseTitleLabel": "Harcama Başlığı",
+  "addExpenseTitleHint": "ör. Akşam yemeği",
+  "addExpenseEnterTitle": "Lütfen bir başlık girin",
+  "addExpenseAmount": "Miktar",
+  "addExpenseAmountHint": "ör. 150",
+  "addExpenseEnterAmount": "Lütfen bir miktar girin",
+  "addExpenseEnterValidAmount": "Geçerli bir miktar girin",
+  "addExpenseCategory": "Kategori",
+
+  "editExpenseTitle": "Harcamayı Düzenle",
+  "editExpenseDeleteTitle": "Harcamayı Sil",
+  "editExpenseDeleteConfirm": "Bu harcamayı silmek istediğine emin misin?",
+
+  "onboardingSkip": "Atla",
+  "onboardingNext": "İleri",
+  "onboardingGetStarted": "Hadi Başlayalım",
+  "onboarding1Title": "BBuddy'ye Hoş Geldin",
+  "onboarding1Desc": "Harcamalarını kolayca kaydet ve bütçeni takip et. Tamamen ücretsiz, tamamen gizli.",
+  "onboarding2Title": "Bütçeni Belirle",
+  "onboarding2Desc": "Aylık bütçe limitini kendin ayarla. Limitine yaklaştığında uygulama seni uyarır.",
+  "onboarding3Title": "Harcamalarını Analiz Et",
+  "onboarding3Desc": "Kategori bazlı grafiklerle paranın nereye gittiğini görsel olarak takip et.",
+
+  "navHome": "Ana Sayfa",
+  "navStats": "İstatistikler",
+
+  "categoryFood": "Yemek",
+  "categoryTransport": "Ulaşım",
+  "categoryEntertainment": "Eğlence",
+  "categoryGrocery": "Market",
+  "categoryBills": "Fatura",
+  "categoryOther": "Diğer",
+
+  "languageTurkish": "Türkçe",
+  "languageTurkishRegion": "Türkiye",
+  "languageEnglish": "İngilizce",
+  "languageEnglishRegion": "United States"
+}

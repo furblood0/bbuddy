@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/amount_formatter.dart';
 import '../../core/category_helper.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/expense.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/settings_provider.dart';
@@ -27,18 +29,17 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  String _formatDate(DateTime date) {
-    const months = [
-      'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz',
-      'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'
-    ];
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  String _formatDate(DateTime date, String locale) {
+    return DateFormat('d MMM y', locale).format(date);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final provider = context.watch<ExpenseProvider>();
-    final currency = context.watch<SettingsProvider>().currencySymbol;
+    final settings = context.watch<SettingsProvider>();
+    final currency = settings.currencySymbol;
+    final locale = settings.locale.languageCode;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -71,28 +72,28 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const SettingsScreen()),
             ),
-            tooltip: 'Ayarlar',
+            tooltip: l.homeSettings,
           ),
         ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildBudgetCard(provider, colorScheme, currency),
+          _buildBudgetCard(provider, colorScheme, currency, l),
           const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
                 Text(
-                  'Harcamalar',
+                  l.homeExpenses,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                 ),
                 const Spacer(),
                 Text(
-                  '${provider.expenses.length} kayıt',
+                  l.homeExpenseCount(provider.expenses.length),
                   style: Theme.of(context)
                       .textTheme
                       .bodySmall
@@ -104,8 +105,8 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 8),
           Expanded(
             child: provider.expenses.isEmpty
-                ? _buildEmptyState(colorScheme)
-                : _buildExpenseList(provider, colorScheme, currency),
+                ? _buildEmptyState(colorScheme, l)
+                : _buildExpenseList(provider, colorScheme, currency, locale, l),
           ),
         ],
       ),
@@ -120,24 +121,33 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (ctx) => const AddExpenseSheet(),
         ),
         icon: const Icon(Icons.add),
-        label: const Text('Harcama Ekle'),
+        label: Text(l.homeAddExpense),
       ),
     );
   }
 
-  Widget _buildBudgetCard(ExpenseProvider provider, ColorScheme colorScheme, String currency) {
+  Widget _buildBudgetCard(ExpenseProvider provider, ColorScheme colorScheme,
+      String currency, AppLocalizations l) {
     final progress =
         (provider.totalExpenses / provider.budgetLimit).clamp(0.0, 1.0);
     final isOverBudget = provider.remainingBudget < 0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final gradientColors = isOverBudget
+        ? [Colors.red.shade800, Colors.red.shade600]
+        : isDark
+            ? [
+                colorScheme.primary.withValues(alpha: 0.75),
+                colorScheme.tertiary.withValues(alpha: 0.6),
+              ]
+            : [colorScheme.primary, colorScheme.tertiary];
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 4, 16, 0),
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: isOverBudget
-              ? [Colors.red.shade700, Colors.red.shade400]
-              : [colorScheme.primary, colorScheme.tertiary],
+          colors: gradientColors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -145,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
         boxShadow: [
           BoxShadow(
             color: (isOverBudget ? Colors.red : colorScheme.primary)
-                .withValues(alpha: 0.35),
+                .withValues(alpha: isDark ? 0.18 : 0.35),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -158,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Kalan Bütçe',
+                l.homeRemainingBudget,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.85),
                   fontSize: 14,
@@ -173,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  isOverBudget ? '⚠ Bütçe Aşıldı' : 'Bu Ay',
+                  isOverBudget ? l.homeBudgetExceeded : l.homeThisMonth,
                   style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -209,7 +219,8 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '%${(progress * 100).toStringAsFixed(0)} kullanıldı',
+                l.homeBudgetUsedPercent(
+                    (progress * 100).toStringAsFixed(0)),
                 style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.7), fontSize: 12),
               ),
@@ -225,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildEmptyState(ColorScheme colorScheme) {
+  Widget _buildEmptyState(ColorScheme colorScheme, AppLocalizations l) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -242,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Henüz harcama eklenmedi',
+            l.homeNoExpensesTitle,
             style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -250,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Aşağıdaki butona basarak ilk harcamanı ekle',
+            l.homeNoExpensesSubtitle,
             style: TextStyle(fontSize: 13, color: colorScheme.outline),
           ),
         ],
@@ -258,18 +269,20 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildExpenseList(ExpenseProvider provider, ColorScheme colorScheme, String currency) {
+  Widget _buildExpenseList(ExpenseProvider provider, ColorScheme colorScheme,
+      String currency, String locale, AppLocalizations l) {
     final expenses = provider.expenses.reversed.toList();
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
       itemCount: expenses.length,
-      itemBuilder: (context, index) =>
-          _buildExpenseItem(expenses[index], provider, colorScheme, currency),
+      itemBuilder: (context, index) => _buildExpenseItem(
+          expenses[index], provider, colorScheme, currency, locale, l),
     );
   }
 
-  Widget _buildExpenseItem(
-      Expense expense, ExpenseProvider provider, ColorScheme colorScheme, String currency) {
+  Widget _buildExpenseItem(Expense expense, ExpenseProvider provider,
+      ColorScheme colorScheme, String currency, String locale,
+      AppLocalizations l) {
     final categoryColor = CategoryHelper.getColor(expense.category);
 
     return Dismissible(
@@ -283,13 +296,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: const Column(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.delete_outline, color: Colors.white, size: 22),
-            SizedBox(height: 2),
-            Text('Sil',
-                style: TextStyle(color: Colors.white, fontSize: 11)),
+            const Icon(Icons.delete_outline, color: Colors.white, size: 22),
+            const SizedBox(height: 2),
+            Text(l.homeSwipeToDelete,
+                style: const TextStyle(color: Colors.white, fontSize: 11)),
           ],
         ),
       ),
@@ -339,7 +352,7 @@ class _HomeScreenState extends State<HomeScreen> {
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 2),
             child: Text(
-              '${expense.category} • ${_formatDate(expense.date)}',
+              '${CategoryHelper.displayName(expense.category, l)} • ${_formatDate(expense.date, locale)}',
               style: TextStyle(fontSize: 12, color: colorScheme.outline),
             ),
           ),

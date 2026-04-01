@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../services/database_service.dart';
 import '../main_screen.dart';
 
@@ -14,27 +15,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
   int _currentPage = 0;
 
-  static const List<_OnboardingPage> _pages = [
-    _OnboardingPage(
+  static const List<_OnboardingPageData> _pageData = [
+    _OnboardingPageData(
       icon: Icons.wallet,
       gradient: [Color(0xFF7C3AED), Color(0xFF6D28D9)],
-      title: 'BBuddy\'ye Hoş Geldin',
-      description:
-          'Harcamalarını kolayca kaydet ve bütçeni takip et. Tamamen ücretsiz, tamamen gizli.',
     ),
-    _OnboardingPage(
+    _OnboardingPageData(
       icon: Icons.account_balance_wallet_outlined,
       gradient: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-      title: 'Bütçeni Belirle',
-      description:
-          'Aylık bütçe limitini kendin ayarla. Limitine yaklaştığında uygulama seni uyarır.',
     ),
-    _OnboardingPage(
+    _OnboardingPageData(
       icon: Icons.pie_chart_outline,
       gradient: [Color(0xFF059669), Color(0xFF047857)],
-      title: 'Harcamalarını Analiz Et',
-      description:
-          'Kategori bazlı grafiklerle paranın nereye gittiğini görsel olarak takip et.',
     ),
   ];
 
@@ -45,7 +37,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _nextPage() {
-    if (_currentPage < _pages.length - 1) {
+    if (_currentPage < _pageData.length - 1) {
       _controller.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
@@ -65,7 +57,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isLast = _currentPage == _pages.length - 1;
+    final l = AppLocalizations.of(context)!;
+    final isLast = _currentPage == _pageData.length - 1;
+
+    final pageTitles = [
+      l.onboarding1Title,
+      l.onboarding2Title,
+      l.onboarding3Title,
+    ];
+    final pageDescs = [
+      l.onboarding1Desc,
+      l.onboarding2Desc,
+      l.onboarding3Desc,
+    ];
 
     return Scaffold(
       body: Stack(
@@ -73,9 +77,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           PageView.builder(
             controller: _controller,
             onPageChanged: (index) => setState(() => _currentPage = index),
-            itemCount: _pages.length,
-            itemBuilder: (context, index) =>
-                _buildPage(context, _pages[index]),
+            itemCount: _pageData.length,
+            itemBuilder: (context, index) => _buildPage(
+              _pageData[index],
+              pageTitles[index],
+              pageDescs[index],
+            ),
           ),
           SafeArea(
             child: Padding(
@@ -85,7 +92,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: [
                   Row(
                     children: List.generate(
-                      _pages.length,
+                      _pageData.length,
                       (index) => AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         margin: const EdgeInsets.only(right: 6),
@@ -103,9 +110,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   if (!isLast)
                     TextButton(
                       onPressed: _finish,
-                      child: const Text(
-                        'Atla',
-                        style: TextStyle(
+                      child: Text(
+                        l.onboardingSkip,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
                         ),
@@ -129,7 +136,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     onPressed: _nextPage,
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: _pages[_currentPage].gradient[0],
+                      foregroundColor: _pageData[_currentPage].gradient[0],
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18),
                       ),
@@ -139,7 +146,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          isLast ? 'Hadi Başlayalım' : 'İleri',
+                          isLast ? l.onboardingGetStarted : l.onboardingNext,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -164,7 +171,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildPage(BuildContext context, _OnboardingPage page) {
+  Widget _buildPage(
+      _OnboardingPageData page, String title, String description) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -205,7 +213,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               const SizedBox(height: 52),
               Text(
-                page.title,
+                title,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
@@ -216,7 +224,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                page.description,
+                description,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.85),
@@ -233,16 +241,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-class _OnboardingPage {
+class _OnboardingPageData {
   final IconData icon;
   final List<Color> gradient;
-  final String title;
-  final String description;
 
-  const _OnboardingPage({
+  const _OnboardingPageData({
     required this.icon,
     required this.gradient,
-    required this.title,
-    required this.description,
   });
 }

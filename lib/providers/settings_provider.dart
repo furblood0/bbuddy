@@ -7,9 +7,11 @@ class SettingsProvider with ChangeNotifier {
 
   String _currencySymbol = '₺';
   ThemeMode _themeMode = ThemeMode.system;
+  Locale _locale = const Locale('tr');
 
   String get currencySymbol => _currencySymbol;
   ThemeMode get themeMode => _themeMode;
+  Locale get locale => _locale;
 
   static const List<Map<String, String>> currencies = [
     {'symbol': '₺', 'name': 'Türk Lirası', 'code': 'TRY'},
@@ -25,6 +27,8 @@ class SettingsProvider with ChangeNotifier {
     _currencySymbol = await _dbService.getCurrencySymbol();
     final index = await _dbService.getThemeModeIndex();
     _themeMode = ThemeMode.values[index];
+    final langCode = await _dbService.getLanguageCode();
+    _locale = Locale(langCode);
     notifyListeners();
   }
 
@@ -37,6 +41,12 @@ class SettingsProvider with ChangeNotifier {
   Future<void> updateThemeMode(ThemeMode mode) async {
     _themeMode = mode;
     await _dbService.saveThemeModeIndex(mode.index);
+    notifyListeners();
+  }
+
+  Future<void> updateLocale(Locale locale) async {
+    _locale = locale;
+    await _dbService.saveLanguageCode(locale.languageCode);
     notifyListeners();
   }
 }

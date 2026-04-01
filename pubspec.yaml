@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   cupertino_icons: ^1.0.8
 
   # Durum Yönetimi (State Management)
@@ -23,7 +25,7 @@ dependencies:
 
   # Yardımcı Araçlar
   uuid: ^4.2.2 # Benzersiz ID oluşturmak için
-  intl: ^0.19.0 # Tarih ve para birimi formatlama için (Önerilen)
+  intl: ^0.20.2 # Tarih ve para birimi formatlama için (Önerilen)
 
 dev_dependencies:
   flutter_test:
@@ -36,6 +38,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
 
   # İleride ekleyeceğin varlıklar (ikonlar, logolar) için:
   # assets:

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/settings_provider.dart';
 
@@ -29,13 +30,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.dispose();
   }
 
-  Future<void> _saveLimit() async {
+  Future<void> _saveLimit(AppLocalizations l) async {
     if (!_formKey.currentState!.validate()) return;
     final newLimit =
         double.tryParse(_limitController.text.replaceAll(',', '.')) ?? 5000.0;
     await context.read<ExpenseProvider>().updateLimit(newLimit);
     if (!mounted) return;
-    _showSnackBar('Bütçe limiti kaydedildi');
+    _showSnackBar(l.settingsBudgetSaved);
     Navigator.of(context).pop();
   }
 
@@ -49,8 +50,125 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showCurrencyPicker() {
+  void _showCurrencyPicker(AppLocalizations l) {
     final settings = context.read<SettingsProvider>();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.75,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  l.settingsSelectCurrency,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: SettingsProvider.currencies.map((currency) {
+                      final isSelected =
+                          settings.currencySymbol == currency['symbol'];
+                      return ListTile(
+                        onTap: () {
+                          settings.updateCurrency(currency['symbol']!);
+                          Navigator.of(ctx).pop();
+                          _showSnackBar(l.settingsCurrencyUpdated);
+                        },
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        leading: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Theme.of(context).colorScheme.primaryContainer
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Center(
+                            child: Text(
+                              currency['symbol']!,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        ),
+                        title: Text(currency['name']!,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w500)),
+                        subtitle: Text(currency['code']!),
+                        trailing: isSelected
+                            ? Icon(Icons.check_circle,
+                                color: Theme.of(context).colorScheme.primary)
+                            : null,
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showThemePicker(AppLocalizations l) {
+    final settings = context.read<SettingsProvider>();
+    final themes = [
+      {
+        'mode': ThemeMode.system,
+        'name': l.settingsThemeSystem,
+        'desc': l.settingsThemeSystemDesc,
+        'icon': Icons.brightness_auto_outlined,
+      },
+      {
+        'mode': ThemeMode.light,
+        'name': l.settingsThemeLight,
+        'desc': l.settingsThemeLightDesc,
+        'icon': Icons.light_mode_outlined,
+      },
+      {
+        'mode': ThemeMode.dark,
+        'name': l.settingsThemeDark,
+        'desc': l.settingsThemeDarkDesc,
+        'icon': Icons.dark_mode_outlined,
+      },
+    ];
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -75,21 +193,116 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                'Para Birimi Seç',
+                l.settingsSelectTheme,
                 style: Theme.of(context)
                     .textTheme
                     .titleLarge
                     ?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              ...SettingsProvider.currencies.map((currency) {
-                final isSelected =
-                    settings.currencySymbol == currency['symbol'];
+              ...themes.map((theme) {
+                final isSelected = settings.themeMode == theme['mode'];
+                final icon = theme['icon'] as IconData;
                 return ListTile(
                   onTap: () {
-                    settings.updateCurrency(currency['symbol']!);
+                    settings.updateThemeMode(theme['mode'] as ThemeMode);
                     Navigator.of(ctx).pop();
-                    _showSnackBar('Para birimi güncellendi');
+                    _showSnackBar(l.settingsThemeUpdated);
+                  },
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  leading: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primaryContainer
+                          : Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      icon,
+                      size: 22,
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  title: Text(theme['name'] as String,
+                      style: const TextStyle(fontWeight: FontWeight.w500)),
+                  subtitle: Text(theme['desc'] as String),
+                  trailing: isSelected
+                      ? Icon(Icons.check_circle,
+                          color: Theme.of(context).colorScheme.primary)
+                      : null,
+                );
+              }),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showLanguagePicker(AppLocalizations l) {
+    final settings = context.read<SettingsProvider>();
+    final languages = [
+      {
+        'locale': const Locale('tr'),
+        'name': 'Türkçe',
+        'region': 'Türkiye',
+        'flag': '🇹🇷',
+      },
+      {
+        'locale': const Locale('en'),
+        'name': 'English',
+        'region': 'United States',
+        'flag': '🇺🇸',
+      },
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                l.settingsSelectLanguage,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              ...languages.map((lang) {
+                final locale = lang['locale'] as Locale;
+                final isSelected =
+                    settings.locale.languageCode == locale.languageCode;
+                return ListTile(
+                  onTap: () {
+                    settings.updateLocale(locale);
+                    Navigator.of(ctx).pop();
+                    _showSnackBar(l.settingsLanguageUpdated);
                   },
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
@@ -106,21 +319,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        currency['symbol']!,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.onSurface,
-                        ),
+                        lang['flag'] as String,
+                        style: const TextStyle(fontSize: 22),
                       ),
                     ),
                   ),
-                  title: Text(currency['name']!,
-                      style:
-                          const TextStyle(fontWeight: FontWeight.w500)),
-                  subtitle: Text(currency['code']!),
+                  title: Text(lang['name'] as String,
+                      style: const TextStyle(fontWeight: FontWeight.w500)),
+                  subtitle: Text(lang['region'] as String),
                   trailing: isSelected
                       ? Icon(Icons.check_circle,
                           color: Theme.of(context).colorScheme.primary)
@@ -134,18 +340,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showClearDataDialog() {
+  void _showClearDataDialog(AppLocalizations l) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Tüm Verileri Sil'),
-        content: const Text(
-          'Tüm harcama kayıtların kalıcı olarak silinecek. Bu işlem geri alınamaz.',
-        ),
+        title: Text(l.settingsClearAllDataTitle),
+        content: Text(l.settingsClearAllDataDesc),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('İptal'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () async {
@@ -155,10 +359,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (!mounted) return;
               dialogNav.pop();
               screenNav.pop();
-              _showSnackBar('Tüm veriler silindi');
+              _showSnackBar(l.settingsAllDataDeleted);
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Sil'),
+            child: Text(l.delete),
           ),
         ],
       ),
@@ -167,12 +371,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final settings = context.watch<SettingsProvider>();
 
+    String themeLabel;
+    if (settings.themeMode == ThemeMode.light) {
+      themeLabel = l.settingsThemeLight;
+    } else if (settings.themeMode == ThemeMode.dark) {
+      themeLabel = l.settingsThemeDark;
+    } else {
+      themeLabel = l.settingsThemeSystem;
+    }
+
+    final langLabel = settings.locale.languageCode == 'en' ? 'English' : 'Türkçe';
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ayarlar'),
+        title: Text(l.settingsTitle),
         centerTitle: false,
       ),
       body: SingleChildScrollView(
@@ -182,7 +398,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionHeader(context, 'Bütçe'),
+              _sectionHeader(context, l.settingsBudget),
               const SizedBox(height: 12),
               _buildCard(
                 colorScheme,
@@ -192,8 +408,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       context,
                       icon: Icons.account_balance_wallet_outlined,
                       color: colorScheme.primary,
-                      title: 'Aylık Bütçe Limiti',
-                      subtitle: 'Bu ay için maksimum harcama tutarı',
+                      title: l.settingsMonthlyBudgetLimit,
+                      subtitle: l.settingsMonthlyBudgetDesc,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -201,8 +417,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       keyboardType: const TextInputType.numberWithOptions(
                           decimal: true),
                       decoration: InputDecoration(
-                        labelText: 'Limit',
-                        hintText: 'ör. 5000',
+                        hintText: l.settingsLimitHint,
                         suffixText: settings.currencySymbol,
                         filled: true,
                         fillColor: colorScheme.surfaceContainerHighest,
@@ -218,12 +433,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Lütfen bir limit girin';
+                          return l.settingsEnterLimit;
                         }
                         final amount =
                             double.tryParse(value.replaceAll(',', '.'));
                         if (amount == null || amount <= 0) {
-                          return 'Geçerli bir tutar girin';
+                          return l.settingsEnterValidAmount;
                         }
                         return null;
                       },
@@ -233,9 +448,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       width: double.infinity,
                       height: 50,
                       child: FilledButton.icon(
-                        onPressed: _saveLimit,
+                        onPressed: () => _saveLimit(l),
                         icon: const Icon(Icons.save_outlined, size: 18),
-                        label: const Text('Kaydet'),
+                        label: Text(l.save),
                         style: FilledButton.styleFrom(
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14)),
@@ -246,7 +461,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              _sectionHeader(context, 'Görünüm'),
+              _sectionHeader(context, l.settingsAppearance),
               const SizedBox(height: 12),
               _buildCard(
                 colorScheme,
@@ -256,7 +471,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       context,
                       icon: Icons.currency_exchange_outlined,
                       color: Colors.green,
-                      title: 'Para Birimi',
+                      title: l.settingsCurrency,
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
@@ -272,78 +487,67 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                       ),
-                      onTap: _showCurrencyPicker,
+                      onTap: () => _showCurrencyPicker(l),
                     ),
                     Divider(
                         height: 1,
                         indent: 54,
                         endIndent: 20,
                         color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color:
-                                      Colors.orange.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(
-                                    Icons.dark_mode_outlined,
-                                    color: Colors.orange,
-                                    size: 20),
-                              ),
-                              const SizedBox(width: 14),
-                              const Text(
-                                'Tema',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15),
-                              ),
-                            ],
+                    _buildActionTile(
+                      context,
+                      icon: Icons.dark_mode_outlined,
+                      color: Colors.orange,
+                      title: l.settingsTheme,
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          themeLabel,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.primary,
                           ),
-                          const SizedBox(height: 12),
-                          SegmentedButton<ThemeMode>(
-                            segments: const [
-                              ButtonSegment(
-                                value: ThemeMode.system,
-                                label: Text('Sistem'),
-                                icon: Icon(Icons.brightness_auto_outlined,
-                                    size: 16),
-                              ),
-                              ButtonSegment(
-                                value: ThemeMode.light,
-                                label: Text('Açık'),
-                                icon: Icon(Icons.light_mode_outlined,
-                                    size: 16),
-                              ),
-                              ButtonSegment(
-                                value: ThemeMode.dark,
-                                label: Text('Koyu'),
-                                icon: Icon(Icons.dark_mode_outlined,
-                                    size: 16),
-                              ),
-                            ],
-                            selected: {settings.themeMode},
-                            onSelectionChanged: (modes) =>
-                                settings.updateThemeMode(modes.first),
-                            style: const ButtonStyle(
-                              visualDensity: VisualDensity.compact,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
+                      onTap: () => _showThemePicker(l),
+                    ),
+                    Divider(
+                        height: 1,
+                        indent: 54,
+                        endIndent: 20,
+                        color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
+                    _buildActionTile(
+                      context,
+                      icon: Icons.language_outlined,
+                      color: Colors.blue,
+                      title: l.settingsLanguage,
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          langLabel,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                      onTap: () => _showLanguagePicker(l),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              _sectionHeader(context, 'Hakkında'),
+              _sectionHeader(context, l.settingsAbout),
               const SizedBox(height: 12),
               _buildCard(
                 colorScheme,
@@ -351,7 +555,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     _buildInfoTile(context,
                         icon: Icons.info_outline,
-                        title: 'Versiyon',
+                        title: l.settingsVersion,
                         trailing: '1.0.0'),
                     Divider(
                         height: 1,
@@ -360,8 +564,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
                     _buildInfoTile(context,
                         icon: Icons.lock_outline,
-                        title: 'Gizlilik',
-                        trailing: 'Tüm veriler cihazında'),
+                        title: l.settingsPrivacy,
+                        trailing: l.settingsPrivacyValue),
                     Divider(
                         height: 1,
                         indent: 54,
@@ -369,24 +573,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: colorScheme.outlineVariant.withValues(alpha: 0.4)),
                     _buildInfoTile(context,
                         icon: Icons.wifi_off_outlined,
-                        title: 'İnternet',
-                        trailing: 'Kullanılmıyor'),
+                        title: l.settingsInternet,
+                        trailing: l.settingsInternetValue),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              _sectionHeader(context, 'Tehlike Bölgesi',
-                  color: Colors.red),
-              const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: OutlinedButton.icon(
-                  onPressed: _showClearDataDialog,
+                  onPressed: () => _showClearDataDialog(l),
                   icon: const Icon(Icons.delete_forever_outlined,
                       color: Colors.red),
-                  label: const Text('Tüm Verileri Sil',
-                      style: TextStyle(color: Colors.red)),
+                  label: Text(l.settingsClearAllData,
+                      style: const TextStyle(color: Colors.red)),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.red),
                     shape: RoundedRectangleBorder(
@@ -402,8 +603,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _sectionHeader(BuildContext context, String title,
-      {Color? color}) {
+  Widget _sectionHeader(BuildContext context, String title, {Color? color}) {
     return Text(
       title,
       style: Theme.of(context).textTheme.labelLarge?.copyWith(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/category_helper.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../models/expense.dart';
 import '../../../providers/expense_provider.dart';
 
@@ -59,6 +60,7 @@ class _EditExpenseSheetState extends State<EditExpenseSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
@@ -92,7 +94,7 @@ class _EditExpenseSheetState extends State<EditExpenseSheet> {
                 Row(
                   children: [
                     Text(
-                      'Harcamayı Düzenle',
+                      l.editExpenseTitle,
                       style:
                           Theme.of(context).textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
@@ -104,13 +106,12 @@ class _EditExpenseSheetState extends State<EditExpenseSheet> {
                         showDialog(
                           context: context,
                           builder: (ctx) => AlertDialog(
-                            title: const Text('Harcamayı Sil'),
-                            content: const Text(
-                                'Bu harcamayı silmek istediğine emin misin?'),
+                            title: Text(l.editExpenseDeleteTitle),
+                            content: Text(l.editExpenseDeleteConfirm),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(ctx).pop(),
-                                child: const Text('İptal'),
+                                child: Text(l.cancel),
                               ),
                               FilledButton(
                                 onPressed: () {
@@ -122,14 +123,14 @@ class _EditExpenseSheetState extends State<EditExpenseSheet> {
                                 },
                                 style: FilledButton.styleFrom(
                                     backgroundColor: Colors.red),
-                                child: const Text('Sil'),
+                                child: Text(l.delete),
                               ),
                             ],
                           ),
                         );
                       },
                       icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      tooltip: 'Sil',
+                      tooltip: l.delete,
                     ),
                   ],
                 ),
@@ -138,7 +139,7 @@ class _EditExpenseSheetState extends State<EditExpenseSheet> {
                   controller: _titleController,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
-                    labelText: 'Harcama Başlığı',
+                    labelText: l.addExpenseTitleLabel,
                     prefixIcon: const Icon(Icons.edit_outlined),
                     filled: true,
                     fillColor: colorScheme.surfaceContainerHighest,
@@ -154,7 +155,7 @@ class _EditExpenseSheetState extends State<EditExpenseSheet> {
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Lütfen bir başlık girin';
+                      return l.addExpenseEnterTitle;
                     }
                     return null;
                   },
@@ -165,9 +166,8 @@ class _EditExpenseSheetState extends State<EditExpenseSheet> {
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
-                    labelText: 'Miktar',
+                    labelText: l.addExpenseAmount,
                     prefixIcon: const Icon(Icons.attach_money_outlined),
-                    suffixText: '₺',
                     filled: true,
                     fillColor: colorScheme.surfaceContainerHighest,
                     border: OutlineInputBorder(
@@ -182,19 +182,19 @@ class _EditExpenseSheetState extends State<EditExpenseSheet> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Lütfen bir miktar girin';
+                      return l.addExpenseEnterAmount;
                     }
                     final amount =
                         double.tryParse(value.replaceAll(',', '.'));
                     if (amount == null || amount <= 0) {
-                      return 'Geçerli bir miktar girin';
+                      return l.addExpenseEnterValidAmount;
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Kategori',
+                  l.addExpenseCategory,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: colorScheme.onSurfaceVariant,
@@ -237,7 +237,7 @@ class _EditExpenseSheetState extends State<EditExpenseSheet> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              category,
+                              CategoryHelper.displayName(category, l),
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: isSelected
@@ -265,9 +265,9 @@ class _EditExpenseSheetState extends State<EditExpenseSheet> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
-                      'Güncelle',
-                      style: TextStyle(
+                    child: Text(
+                      l.update,
+                      style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                   ),

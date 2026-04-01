@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/amount_formatter.dart';
 import '../../core/category_helper.dart';
+import '../../l10n/app_localizations.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/settings_provider.dart';
 
@@ -19,6 +20,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final provider = context.watch<ExpenseProvider>();
     final currency = context.watch<SettingsProvider>().currencySymbol;
     final colorScheme = Theme.of(context).colorScheme;
@@ -44,21 +46,21 @@ class _StatsScreenState extends State<StatsScreen> {
                   const Icon(Icons.pie_chart, color: Colors.white, size: 18),
             ),
             const SizedBox(width: 10),
-            const Text(
-              'İstatistikler',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+            Text(
+              l.statsTitle,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
             ),
           ],
         ),
       ),
       body: provider.expenses.isEmpty
-          ? _buildEmptyState(colorScheme)
+          ? _buildEmptyState(colorScheme, l)
           : _buildContent(
-              context, provider, categoryTotals, total, colorScheme, currency),
+              context, provider, categoryTotals, total, colorScheme, currency, l),
     );
   }
 
-  Widget _buildEmptyState(ColorScheme colorScheme) {
+  Widget _buildEmptyState(ColorScheme colorScheme, AppLocalizations l) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -75,7 +77,7 @@ class _StatsScreenState extends State<StatsScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Henüz gösterilecek veri yok',
+            l.statsNoDataTitle,
             style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -83,7 +85,7 @@ class _StatsScreenState extends State<StatsScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Harcama ekledikçe grafikler burada görünür',
+            l.statsNoDataSubtitle,
             style: TextStyle(fontSize: 13, color: colorScheme.outline),
           ),
         ],
@@ -98,6 +100,7 @@ class _StatsScreenState extends State<StatsScreen> {
     double total,
     ColorScheme colorScheme,
     String currency,
+    AppLocalizations l,
   ) {
     final sortedEntries = categoryTotals.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -107,21 +110,22 @@ class _StatsScreenState extends State<StatsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSummaryRow(provider, total, colorScheme, currency),
+          _buildSummaryRow(provider, total, colorScheme, currency, l),
           const SizedBox(height: 20),
-          _buildSectionHeader(context, 'Kategori Dağılımı'),
+          _buildSectionHeader(context, l.statsCategoryDistribution),
           const SizedBox(height: 12),
-          _buildPieChartCard(sortedEntries, total, colorScheme, currency),
+          _buildPieChartCard(sortedEntries, total, colorScheme, currency, l),
           const SizedBox(height: 20),
-          _buildSectionHeader(context, 'Kategori Detayı'),
+          _buildSectionHeader(context, l.statsCategoryDetail),
           const SizedBox(height: 12),
-          _buildCategoryList(sortedEntries, total, colorScheme, currency),
+          _buildCategoryList(sortedEntries, total, colorScheme, currency, l),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryRow(dynamic provider, double total, ColorScheme colorScheme, String currency) {
+  Widget _buildSummaryRow(dynamic provider, double total,
+      ColorScheme colorScheme, String currency, AppLocalizations l) {
     final budgetUsedPercent =
         (total / provider.budgetLimit * 100).clamp(0.0, 999.0);
 
@@ -131,7 +135,7 @@ class _StatsScreenState extends State<StatsScreen> {
           child: _buildStatCard(
             colorScheme,
             icon: Icons.payments_outlined,
-            label: 'Toplam Harcama',
+            label: l.statsTotalExpenses,
             value: formatAmount(total, currency),
             color: colorScheme.primary,
           ),
@@ -141,7 +145,7 @@ class _StatsScreenState extends State<StatsScreen> {
           child: _buildStatCard(
             colorScheme,
             icon: Icons.category_outlined,
-            label: 'Kategori Sayısı',
+            label: l.statsCategoryCount,
             value: '${provider.categoryTotals.length}',
             color: Colors.orange,
           ),
@@ -151,7 +155,7 @@ class _StatsScreenState extends State<StatsScreen> {
           child: _buildStatCard(
             colorScheme,
             icon: Icons.percent_outlined,
-            label: 'Bütçe Kullanımı',
+            label: l.statsBudgetUsage,
             value: '%${budgetUsedPercent.toStringAsFixed(0)}',
             color: budgetUsedPercent > 100 ? Colors.red : Colors.green,
           ),
@@ -211,6 +215,7 @@ class _StatsScreenState extends State<StatsScreen> {
     double total,
     ColorScheme colorScheme,
     String currency,
+    AppLocalizations l,
   ) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -259,14 +264,15 @@ class _StatsScreenState extends State<StatsScreen> {
                     Text(
                       _touchedIndex >= 0 &&
                               _touchedIndex < sortedEntries.length
-                          ? sortedEntries[_touchedIndex].key
-                          : 'Toplam',
+                          ? CategoryHelper.displayName(
+                              sortedEntries[_touchedIndex].key, l)
+                          : l.statsTotal,
                       style: TextStyle(
                           fontSize: 12, color: colorScheme.outline),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                          _touchedIndex >= 0 &&
+                      _touchedIndex >= 0 &&
                               _touchedIndex < sortedEntries.length
                           ? formatAmount(
                               sortedEntries[_touchedIndex].value, currency)
@@ -302,7 +308,7 @@ class _StatsScreenState extends State<StatsScreen> {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Text(entry.key,
+                  Text(CategoryHelper.displayName(entry.key, l),
                       style: TextStyle(
                           fontSize: 12, color: colorScheme.onSurface)),
                 ],
@@ -344,6 +350,7 @@ class _StatsScreenState extends State<StatsScreen> {
     double total,
     ColorScheme colorScheme,
     String currency,
+    AppLocalizations l,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -397,7 +404,7 @@ class _StatsScreenState extends State<StatsScreen> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    entry.key,
+                                    CategoryHelper.displayName(entry.key, l),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 14,

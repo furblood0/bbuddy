@@ -8,6 +8,7 @@ class DatabaseService {
   static const String _onboardingKey = 'onboarding_seen';
   static const String _currencyKey = 'currency_symbol';
   static const String _themeModeKey = 'theme_mode';
+  static const String _languageKey = 'language_code';
   static const double _defaultBudgetLimit = 5000.0;
 
   Future<Box<Expense>> get _expensesBox async =>
@@ -79,5 +80,15 @@ class DatabaseService {
   Future<void> clearAllExpenses() async {
     final box = await _expensesBox;
     await box.clear();
+  }
+
+  Future<String> getLanguageCode() async {
+    final box = await _settingsBox;
+    return box.get(_languageKey, defaultValue: 'tr') as String;
+  }
+
+  Future<void> saveLanguageCode(String code) async {
+    final box = await _settingsBox;
+    await box.put(_languageKey, code);
   }
 }

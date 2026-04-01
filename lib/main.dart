@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
+import 'l10n/app_localizations.dart';
 import 'models/expense.dart';
 import 'providers/expense_provider.dart';
 import 'providers/settings_provider.dart';
@@ -36,12 +38,23 @@ class BBuddyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = context.watch<SettingsProvider>().themeMode;
+    final settings = context.watch<SettingsProvider>();
 
     return MaterialApp(
       title: 'BBuddy',
       debugShowCheckedModeBanner: false,
-      themeMode: themeMode,
+      themeMode: settings.themeMode,
+      locale: settings.locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('tr'),
+        Locale('en'),
+      ],
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.deepPurple,
